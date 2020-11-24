@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <script src="script.js"></script>
+    <title>Algebra!</title>
+  </head>
+  <body>
+
+    <div class="container">
+        <br>
+        <p id="top-equation">Hello, algebra!</p>
+        <br>
+        <div class="card-group" id="card-group-0">
+        </div>
+        <div class="card-group" id="card-group-1">
+        </div>
+        <div class="card-group" id="card-group-2">
+        </div>
+        <div class="card-group" id="card-group-3">
+        </div>
+        <div class="card-group" id="card-group-4">
+        </div>
+        <br>
+        <div class="alert alert-success" id="success-message" hidden>
+            <strong>Success!</strong> Well done.
+            <br>
+        </div>
+        <br>
+        <button class="btn btn-light btn-lg" id="next-equation" onclick="next()" hidden>Next</button>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+    <script type="text/javascript">
+        let pindex = 0;
+        let altindex = 0;
+        $(() => {
+            const params = new URLSearchParams(window.location.search)
+            if(params.has('altindex')) altindex = parseInt(params.get('altindex'))
+            else altindex = 0;
+            if(params.has('index')) pindex = parseInt(params.get('index'))
+            else pindex = 0;
+            if(pindex > problem.length-1) pindex = random(0, problem.length-1);
+            problem = problem[pindex];
+            if (performance.navigation.type == performance.navigation.TYPE_RELOAD) {
+                console.info( "This page is reloaded" );
+            } else {
+                console.info( "This page is not reloaded");
+                if(pindex%2===0 && pindex>0) minigame(true);
+                else minigame(false);
+            }
+            // create table
+            createCardsRow(0, ncols);
+            createCardsRow(1, ncols);
+            createCardsRow(2, ncols);
+            createCardsRow(3, ncols);
+            createCardsRow(4, ncols);
+            solve_this();
+            submit(0);
+        });
+        function solve_this() {
+            setEquation(0, problem);
+            // setEquation(1, problem);
+            // setEquation(2, problem);
+            // setEquation(3, problem);
+            // setEquation(4, problem);
+        }
+        function next() {
+            location.href = location.pathname + `?index=${pindex+1}` + `?altindex=${altindex+1}`;
+        }
+        function minigame(enable) {
+            // $(`#minigame`).attr('hidden', enable?false:true)
+            if(enable) $(`#minigame`).html('<iframe src="https://mimstris.surge.sh/" height="800" width="600" title="Iframe Example"></iframe>');
+        }
+        function random(min, max, round=0) {
+            let number = Math.random() * (max - min) + min;
+            let rounder = Math.pow(10, round);
+            return round===0 ? Math.round(number) : Math.round(number*rounder)/rounder;
+        }
+        function deepEqual(x, y) {
+            console.log(`deepEqual({${x}}, {${y}})`);
+            if(x === y) return true;
+            if(!x || !y) return false;
+            if(typeof x !== typeof y) return false;
+            let output = (Array.isArray(x) && Array.isArray(y)) 
+                ? deepEqualArray(x, y) : deepEqualObj(x, y);
+            console.log(`output = ${output}`);
+            return output;
+            // sub-functions
+            function deepEqualObj(x, y) {
+                // console.log(`deepEqualObj({${x}}, {${y}})`);
+              const ok = Object.keys, tx = typeof x, ty = typeof y;
+              return x && y && tx === 'object' && tx === ty ? (
+                ok(x).length === ok(y).length &&
+                  ok(x).every(key => deepEqual(x[key], y[key]))
+              ) : (x === y);
+            }
+            function deepEqualArray(x, y) {
+                console.log(`deepEqualArray([${x}], [${y}])`);
+              return x && y && Array.isArray(x) && Array.isArray(y) ? (
+                x.length === x.length &&
+                  x.every((val,i) => deepEqual(x[i], y[i]))
+              ) : (x === y);
+            }
+        }
+        function check(irow) {
+            let actual = [];
+            for(let ecard of $(`#card-group-${irow}`).children()) {
+                let text = $(ecard).find('h4').text();
+                let value = $(ecard).find('input').val();
+                if(!text && !value) continue;
+                if(value) text = value;
+                let number = parseInt(text);
+                if(!isNaN(number)) text = number;
+                actual.push(text);
+                console.log(text);
+            }
+            // let expected = [].concat(...problem.steps[irow]);
+            let expected = problem.steps[irow][1];
+            console.log(`expected ...${expected}...`)
+            console.log(`actual   ...${actual}...`)
+            // if(deepEqual(expected, actual)) { console.log('green') }
+            return deepEqual(expected, actual);
+        }
+        function submit(irow) {
+            if(check(irow)) {
+                console.log('PASS')
+                $(`#card-group-${irow}`).sortable('disable');
+                $(`#card-group-${irow}`).css('border', '2px solid lightgreen');
+                if(irow) $(`#card-group-${irow}`).css('border-top', '0px solid lightgreen');
+                $(`#card-group-${irow}>.card`).css('background-color', '#ABEBC6');
+                $(`#card-icon-${irow}-${ncols-1}`).css('background-color', '#ABEBC6');
+                $(`#card-icon-${irow}-${ncols-1}`).text('pets');
+                $(`#card-icon-${irow}-${ncols-1}`).parent().attr('onclick', "");
+                $(`#card-group-${irow}`).find('input').attr('disabled', true);
+                // setEquation(irow+1, problem, -1);
+                if(irow+1<problem.steps.length) setEquation(irow+1, problem);
+                else {
+                    $(`#success-message`).attr('hidden', false);
+                    $(`#next-equation`).attr('hidden', false);
+                }
+            } else {
+                console.log('FAIL')
+                $(`#card-group-${irow}`).css('border', '2px solid red');
+            }
+        }
+        function setEquation(irow=0, problem, offset=0, ml=1) {
+            // let [lhs, eqs, rhs] = problem.steps[irow+offset];
+            let equation = problem.steps[irow+offset][0];
+            let soln = problem.solution;
+            let mgn = 1 //ncols - lhs.length - rhs.length - 1 - 1;
+            for(let i=0; i<equation.length; i++) {
+                if(equation[i]===x||equation[i]===y) $(`#card-title-${irow}-${mgn+i}`).css('font-size', 32);
+                if(equation[i]==='<>') {
+                    $(`#card-title-${irow}-${mgn+i}`).attr('hidden', true);
+                    $(`#card-input-${irow}-${mgn+i}`).attr('hidden', false);
+                }
+                else $(`#card-title-${irow}-${mgn+i}`).text(equation[i]);
+            }
+            $(`#top-equation`).text(equation.join(' '));
+            // for(let i=0; i<lhs.length; i++) {
+            //     if(lhs[i]===x||lhs[i]===y) $(`#card-title-${irow}-${mgn+i}`).css('font-size', 32);
+            //     $(`#card-title-${irow}-${mgn+i}`).text(lhs[i]);
+            //     ml=i;
+            // }
+            // $(`#card-title-${irow}-${++ml+mgn}`).text('=');  ml++;
+            // for(let i=0; i<rhs.length; i++) {
+            //     $(`#card-title-${irow}-${mgn+ml+i}`).text(rhs[i]);
+            // }
+        }
+        function dropped(event, ui) {
+            console.log(`dropped(event, ui)`);
+            console.log(event);
+            console.log(ui);
+            let h4 = $(ui.item).find('div>h4')[0];
+            console.log('h4=', h4);
+            if($(h4).text()==='-') $(h4).text('+')
+            else if($(h4).text()==='+') $(h4).text('-')
+            else if($(h4).text()==='/') $(h4).text('*')
+            else if($(h4).text()==='*') $(h4).text('/')
+            console.log('h4=', h4);
+        }
+        function createCardsRow(irow, ncols) {
+                $(`#card-group-${irow}`).sortable({
+                    tolerance: "intersect",
+                    revert: true,
+                    // axis: "x",
+                   stop: dropped,
+                });
+                for(let icol=0; icol<ncols; icol++) {
+                let div = document.createElement('div');
+                if(icol===ncols-1)
+                    div.innerHTML = createCardButton(irow, icol);
+                else
+                    div.innerHTML = createCardText(irow, icol);
+                    // {title:`title-${irow}-${icol}`, text:`text-${irow}-${icol}`, footer:`footer-${irow}-${icol}`});
+                $(`#card-group-${irow}`).append(div.firstChild);
+            }
+        }
+        function createCardText(irow, icol, {title='', text='', footer=''}={}) {
+            let style = `Verdana, Geneva, sans-serif`
+            return `
+          <div class="card" id="card-${irow}-${icol}" xondrop="dropped(${irow},${icol})">
+            <!-- <img src="..." class="card-img-top" alt="..."> -->
+            <div class="card-body" id="card-body-${irow}-${icol}">
+              <h4 class="card-title text-center" id="card-title-${irow}-${icol}" style="${style};font-size:22px">${title}</h4>
+              <input class="form-control" type="text" placeholder="?" id="card-input-${irow}-${icol}" hidden>
+              <p class="card-text" id="card-text-${irow}-${icol}">${text}</p>
+            </div>
+          </div>
+            `.trim();
+        }
+        function createCardInput(irow, icol, {title='', text='', footer='', input=1}={}) {
+            let style = `Verdana, Geneva, sans-serif`
+            return `
+          <div class="card" id="card-${irow}-${icol}">
+            <!-- <img src="..." class="card-img-top" alt="..."> -->
+            <div class="card-body" id="card-body-${irow}-${icol}">
+              ${title ? `<h4 class="card-title text-center" id="card-title-${irow}-${icol}" style="${style};font-size:22px">${title}</h4>` : ''}
+              ${text ? `<p class="card-text" id="card-text-${irow}-${icol}">${text}</p>` : ''}
+              <a class="btn btn-light"><i class="material-icons btn-light" id="card-icon-${irow}-${icol}" style="font-size:24px;color:green;cursor:pointer;" onclick="submit(${irow})">check</i></a>
+            </div>
+          </div>
+            `.trim();
+        }
+        function createCardButton(irow, icol, {title='', text='', footer='', btn=1}={}) {
+            let style = `Verdana, Geneva, sans-serif`
+            return `
+          <div class="card" id="card-${irow}-${icol}">
+            <!-- <img src="..." class="card-img-top" alt="..."> -->
+            <div class="card-body" id="card-body-${irow}-${icol}">
+              ${title ? `<h4 class="card-title text-center" id="card-title-${irow}-${icol}" style="${style};font-size:22px">${title}</h4>` : ''}
+              ${text ? `<p class="card-text" id="card-text-${irow}-${icol}">${text}</p>` : ''}
+              <a class="btn btn-link" onclick="submit(${irow})"><i class="material-icons btn-light" id="card-icon-${irow}-${icol}" style="font-size:28px;color:green;xcursor:pointer;">check</i></a>
+            </div>
+          </div>
+            `.trim();
+        }
+    </script>
+
+    <div id="minigame" style="margin-left:20%">
+        <!-- <iframe src="https://www.edopedia.com/demo/pixeldefense" height="400" width="600" title="Iframe Example"></iframe> -->
+        <!-- <iframe src="https://mimstris.surge.sh/" height="800" width="600" title="Iframe Example"></iframe> -->
+    </div>
+
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script> -->
+
+    <!-- Option 2: jQuery, Popper.js, and Bootstrap JS -->
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s" crossorigin="anonymous"></script>
+   
+  </body>
+</html>
