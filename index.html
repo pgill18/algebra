@@ -16,6 +16,13 @@
 
     <script src="script.js"></script>
     <title>Algebra!</title>
+
+    <style type="text/css">
+        .stop-scrolling {
+          height: 100%;
+          overflow: hidden;
+        }
+    </style>
   </head>
   <body>
 
@@ -56,11 +63,13 @@
             problem = problem[pindex];
             if (performance.navigation.type == performance.navigation.TYPE_RELOAD) {
                 console.info( "This page is reloaded" );
+                minigame(false);
             } else {
                 console.info( "This page is not reloaded");
                 if(pindex%2===0 && pindex>0) minigame(true);
                 else minigame(false);
             }
+            // minigame(true);
             // create table
             createCardsRow(0, ncols);
             createCardsRow(1, ncols);
@@ -70,6 +79,12 @@
             solve_this();
             submit(0);
         });
+        function scrolling(on=true) {
+            if(on) window.scrollTo(0,0);
+            else window.scrollTo(0,document.body.scrollHeight);
+            if(on) $('body').removeClass('stop-scrolling');
+            else $('body').addClass('stop-scrolling');
+        }
         function solve_this() {
             setEquation(0, problem);
             // setEquation(1, problem);
@@ -82,7 +97,10 @@
         }
         function minigame(enable) {
             // $(`#minigame`).attr('hidden', enable?false:true)
-            if(enable) $(`#minigame`).html('<iframe src="https://mimstris.surge.sh/" height="800" width="600" title="Iframe Example"></iframe>');
+            if(enable) $(`#minigame`).html('<iframe id="tetris" src="https://mimstris.surge.sh/" height="900" width="800" title="Iframe Example"></iframe>');
+            // if(enable) $(`#minigame`).html('<iframe id="pixeldefense" src="https://www.edopedia.com/demo/pixeldefense" height="900" width="1200" title="Iframe Example"></iframe>');
+            // if(enable) $(`#minigame`).html('<iframe id="pacman" src="https://pacman.live/play.html" height="900" width="1200" title="Iframe Example"></iframe>');
+            $(`#buttons`).attr('hidden', enable?false:true)
         }
         function random(min, max, round=0) {
             let number = Math.random() * (max - min) + min;
@@ -250,9 +268,18 @@
         }
     </script>
 
+    <div class="row" id="buttons">
+        <div class="col-3"></div>
+        <button class="btn-light col-2" onclick="scrolling(false)">Play</button>
+        <button class="btn-light col-2" onclick="scrolling(true)">Done</button>
+        <div class="col-4"></div>
+    </div>
+    <hr>
+
     <div id="minigame" style="margin-left:20%">
         <!-- <iframe src="https://www.edopedia.com/demo/pixeldefense" height="400" width="600" title="Iframe Example"></iframe> -->
         <!-- <iframe src="https://mimstris.surge.sh/" height="800" width="600" title="Iframe Example"></iframe> -->
+        <!-- <iframe src="https://pacman.live/play.html" height="800" width="600" title="Iframe Example"></iframe> -->
     </div>
 
     <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
